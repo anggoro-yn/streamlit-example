@@ -1,38 +1,89 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import numpy as np
 
-"""
-# Welcome to Streamlit!
+st.set_page_config(layout="wide")
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+st.title('Ketimpangan Listrik, Ketimpangan Kesejahteraan?')
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+string1 = '''
+         Energi listrik merupakan bentuk energi yang paling mudah digunakan, baik oleh sektor rumah tangga, komersial maupun industri. 
+         Karena energi listrik telah menjadi bagian tidak terpisahkan dari kehidupan manusia, energi listrik dapat digunakan menjadi 
+         penanda tingkat kemakmuran suatu masyarakat. Artikel ini mencoba melihat bagaimna perbandingan pemakaian listrik di Indoensia
+         dan di negara-negara ASEAN lain dan melihat sejauh apa korelasinya dengan kesejahteraan masyarakat di masing-masing negara.
+         
+         Setelah itu, pemakaian listrik di masing-masing provinsi di Indonesia akan dibandingkan untuk melihat bagaimana kemajuan dan 
+         kesejahteraan telah dicapai di masing-masing daerah.
+         '''
+st.write(string1)
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
 
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+ASEANElecGen_df = pd.read_csv('ASEANElecGen.csv',sep=';')
+ASEANElecGen_df = ASEANElecGen_df[ASEANElecGen_df['Year']>=2000]
+ASEANElecGen_df = ASEANElecGen_df[ASEANElecGen_df['Year']<=2020].reset_index()
 
-    Point = namedtuple('Point', 'x y')
-    data = []
+ASEANElecGenPerCapita_df = pd.read_csv('ASEANElecGenPerCapita.csv',sep=';')
+ASEANElecGenPerCapita_df = ASEANElecGenPerCapita_df[ASEANElecGenPerCapita_df['Year']>=2000]
+ASEANElecGenPerCapita_df = ASEANElecGenPerCapita_df[ASEANElecGenPerCapita_df['Year']<=2020].reset_index()
 
-    points_per_turn = total_points / num_turns
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
+ASEANElecGen_df['Population'] = ASEANElecGen_df['Electricity generation (TWh)']*1000000000 / ASEANElecGenPerCapita_df['Per capita electricity (kWh)']
+ASEANElecGen_df['Per capita electricity (kWh)'] = ASEANElecGenPerCapita_df['Per capita electricity (kWh)']
+ASEANElecGen_df = ASEANElecGen_df.astype({'Population':'int64','Per capita electricity (kWh)':'int64'})
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+import seaborn as sns
+import matplotlib.pyplot as plt
+import altair as alt
+
+st.subheader('Perbandingan Pemakaian Listrik Indonesia dengan Negara ASEAN lain')
+
+c = alt.Chart(ASEANElecGen_df).mark_line().encode(
+    x='Year', y='Electricity generation (TWh)', color='Entity')
+
+st.altair_chart(c, use_container_width=True)
+
+string2 = '''
+         Dari data pemakaian listrik secara absolut, dapat dilihat bahwa Indonesia adalah pengguna listrik terbesar di wilayah Asia Tenggara (ASEAN). 
+         Namun, tidaklah pas jika kita hanya melihat dari besarnya pemakaian agregat satu negara, karena setiap negara memiliki jumlah penduduk yang
+         berbeda.
+         '''
+st.write(string2)
+
+st.subheader('Populasi Penduduk Negara ASEAN')
+
+c = alt.Chart(ASEANElecGen_df).mark_line().encode(
+    x='Year', y='Population', color='Entity')
+
+st.altair_chart(c, use_container_width=True)
+
+string3 = '''
+         Terlihat jelah bahwa jumlah penduduk masing-masing negara sangat jauh perbedaannya. 
+         
+         Untuk itu, akan lebih tepat jika dibandingkan adalah pemakaian listrik per kapita. 
+         '''
+st.write(string3)
+
+st.subheader('Perbandingan Pemakaian Listrik Per Kapita Indonesia dengan Negara ASEAN lain')
+
+c = alt.Chart(ASEANElecGen_df).mark_line().encode(
+    x='Year', y='Per capita electricity (kWh)', color='Entity')
+
+st.altair_chart(c, use_container_width=True)
+
+string3 = '''
+         Untuk membantu memperjelas grafik di atas, disajikan data pemakaian listik per kapita pada tahun 2020 di bawah ini:
+         '''
+st.write(string3)
+
+ASEANElecGen_df[ASEANElecGen_df['Year']==2020][['Entity','Per capita electricity (kWh)']]
+
+string4 = '''
+         Sangat nampak bahwa Indonesia jauh tertinggal dibanding banyak negara tetangga. Pemakaian listrik per kapita di Singapura 
+         dan di Brunei sekitar semnbilan kali lipat pemakaian per kapita di Indonesia. Indonesia hanya lebih tinggi dibandingkan 
+         Myanmar, Kamboja dan Philipina. 
+         '''
+st.write(string4)
+
+
+
