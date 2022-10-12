@@ -41,8 +41,6 @@ ASEANElecGen_df['Population'] = ASEANElecGen_df['Electricity generation (TWh)']*
 ASEANElecGen_df['Per capita electricity (kWh)'] = ASEANElecGenPerCapita_df['Per capita electricity (kWh)']
 ASEANElecGen_df = ASEANElecGen_df.astype({'Population':'int64','Per capita electricity (kWh)':'int64'})
 
-import seaborn as sns
-import matplotlib.pyplot as plt
 import altair as alt
 
 st.subheader('Perbandingan Pemakaian Listrik Indonesia dengan Negara ASEAN lain')
