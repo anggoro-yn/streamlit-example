@@ -59,9 +59,9 @@ with col2:
        alt.Y('Electricity generation (TWh)'),color='Country')
     st.altair_chart(c, use_container_width=True)
 
-c = alt.Chart(ASEANElecGen_df).mark_line(color='blue').encode(
-    x='Year', y='Electricity generation (TWh)', color='Country')
-st.altair_chart(c, use_container_width=True)
+#c = alt.Chart(ASEANElecGen_df).mark_line(color='blue').encode(
+#    x='Year', y='Electricity generation (TWh)', color='Country')
+#st.altair_chart(c, use_container_width=True)
 
 string2 = '''
         Dari data pemakaian listrik di tingkat agregat / negara, dapat dilihat bahwa Indonesia adalah pengguna 
