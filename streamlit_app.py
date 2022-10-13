@@ -91,7 +91,6 @@ st.subheader('Perbandingan Pemakaian Listrik Per Kapita Indonesia dengan Negara 
 
 c = alt.Chart(ASEANElecGen_df).mark_line().encode(
     x='Year', y='Per capita electricity (kWh)', color='Country')
-
 st.altair_chart(c, use_container_width=True)
 
 string3 = '''
@@ -146,3 +145,82 @@ string4 = '''
          Indonesia hanya lebih tinggi dibandingkan Myanmar, Kamboja dan Philipina. 
          '''
 st.write(string4)
+
+st.subheader('Apakah ketimpangan listrik menunjukkan ketimpangan kesejahteraan?')
+
+string5 = '''
+         Di awal artikel, dinyatakan bahwa penggunaan energi listrik dapat digunakan sebagai penanda kesejahteraan 
+         masyarakat. Bagaimana kita, secara sederhana, memastikan bahwa asumsi tersebut tepat? 
+         
+         Salah satu ukuran yang sering digunakan oleh ekonom adalah GDP/Kapita (yaitu pendapatan domestik bruto
+         dibagi jumlah populasi). Mari kita bandingkan GDP/Kapita dari masing-masing negara di ASEAN.
+         '''
+st.write(string5)
+
+ASEANGDP_df = pd.read_csv('GDP.csv',sep=';')
+listYear = [str(i) for i in range(2000,2022)]
+ASEANGDP_dfNew = pd.DataFrame()
+for i in listYear:
+    ASEANGDP_dfTemp = pd.DataFrame()
+    yearSeries = pd.Series([i for x in range(10)])
+    ASEANGDP_dfTemp[['Country','Code']] =ASEANGDP_df[['Country Name','Country Code']]
+    ASEANGDP_dfTemp['Year'] = yearSeries
+    ASEANGDP_dfTemp['GDP'] = ASEANGDP_df[i]
+    ASEANGDP_dfNew = pd.concat([ASEANGDP_dfNew,ASEANGDP_dfTemp])
+ASEANGDP_dfNew = ASEANGDP_dfNew.reset_index()
+
+ASEANGDP_dfNew = ASEANGDP_dfNew.astype({'Year':'int64'})
+ASEANGDP_dfNew = ASEANGDP_dfNew[ASEANGDP_dfNew['Year']<=2020]
+ASEANGDP_dfNew = ASEANGDP_dfNew.sort_values(by=['Country','Year'],ignore_index=True)
+
+ASEANGDP_dfNew['Population'] =ASEANElecGen_df['Population']
+ASEANGDP_dfNew['GDP/Capita'] = ASEANGDP_dfNew['GDP']/ASEANGDP_dfNew['Population']
+ASEANGDP_dfNew = ASEANGDP_dfNew.astype({'GDP/Capita':'int64'})
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.write('')
+    st.write('')
+    st.write('')
+    c = alt.Chart(ASEANGDP_dfNew).mark_line().encode(
+        x='Year', y='GDP/Capita', color='Country')
+    st.altair_chart(c, use_container_width=True)
+
+with col2:
+    tahun2 = st.slider('Tahun', 2000, 2020, 2020, key='234')
+    c = alt.Chart(ASEANGDP_dfNew[ASEANGDP_dfNew['Year']==tahun2]).mark_bar().encode(
+            alt.X('Country', sort='-y'), 
+            alt.Y('GDP/Capita'),
+            color=alt.Color('Country',scale=alt.Scale(domain=domain, range=range_)))
+    st.altair_chart(c, use_container_width=True)
+
+string6 = '''
+         Terlihat bahwa Pemakaian listrik per kapita tidak secara tepat 100% menunjukkan ketimpangan
+         kesejahteraan (sebagaimana diukur melalui GDP/Kapita). Namun kita bisa merasakan adanya ketimpangan baik pada 
+         chart pemakaian listrik per kapita maupun pada chart GDP/Kapita. 
+         
+         Singapura dan Brunei telah jauh melampaui negara-negara ASEAN lainnya dalam hal kesejahteraan masyarakat. 
+         Malaysia dan Thailand berada pada urutan berikutnya. Sedangkan negara ASEAN lainnya masih mengekor di 
+         belakang.
+         
+         Grafik di bawah ini menujukkan bagaimana perkembangan GDP/Capita dan Pemakaian listrik per kapita 
+         dari tahun ke tahun untuk masing-masing negara. CHart telah dinormalisasi dengan titik tertinggi GDP/Kapita 
+         dan Pemakaian Listrik per kapita, agar dapat dibandingkan pada satu grafik yang sama. 
+         '''
+st.write(string6)
+
+
+ASEANElecGen_df['GDP/Capita'] = ASEANGDP_dfNew['GDP/Capita']
+
+negara = st.selectbox(
+    'Negara yang dipilih: ', domain)
+tickerDF = pd.DataFrame()
+tickerDF['Per capita electricity (kWh)'] = ASEANElecGen_df[ASEANElecGen_df['Country']==negara]['Per capita electricity (kWh)']
+tickerDF['Per capita electricity (kWh)'] = tickerDF['Per capita electricity (kWh)']/max(tickerDF['Per capita electricity (kWh)'])
+tickerDF['GDP/Capita'] = ASEANElecGen_df[ASEANElecGen_df['Country']==negara]['GDP/Capita']
+tickerDF['GDP/Capita'] = tickerDF['GDP/Capita']/max(tickerDF['GDP/Capita'])
+tickerDF['Year']= ASEANElecGen_df[ASEANElecGen_df['Country']==negara]['Year']
+tickerDF = tickerDF.set_index('Year')
+st.line_chart(tickerDF)
+
