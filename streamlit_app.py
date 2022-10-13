@@ -6,10 +6,15 @@ from PIL import Image
 
 st.set_page_config(layout="wide")
 
+st.title('Ketimpangan Listrik, Ketimpangan Kesejahteraan?')
+stringHeader =  '''
+                Penulis : **Anggoro Yudho Nuswantoro**       
+                '''
+
+st.markdown(stringHeader)
 image = Image.open('listrik.jpg')
 st.image(image, caption='Saluran Transmisi Tegangan Tinggi 500KV')
 
-st.title('Ketimpangan Listrik, Ketimpangan Kesejahteraan?')
 
 string1 = '''
          Dalam kehidupan modern, energi listrik merupakan bentuk energi yang paling mudah dibangkitkan, 
@@ -224,3 +229,11 @@ tickerDF['Year']= ASEANElecGen_df[ASEANElecGen_df['Country']==negara]['Year']
 tickerDF = tickerDF.set_index('Year')
 st.line_chart(tickerDF)
 
+stringFooter = '''
+**Sumber data** :
+
+*1. World Bank*
+
+*2. World in Data*    
+                '''
+st.markdown(stringFooter)
